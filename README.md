@@ -59,10 +59,3 @@ npm start
 ## License
 
 MIT
-# vue-ssr-tempalte
-# vue-ssr-template
-# vue-ssr-template
-# vue-ssr-template
-# vue-ssr-tempalte
-# vue-ssr-tempalte
-# vue-ssr-template
