@@ -7,7 +7,6 @@ export function createAPI() {
         max: 1000,
         maxAge: 1000 * 60 * 2 // 2 min cache
     });
-
-    api.url = websiteConfig.host + websiteConfig.path;
+    api.url = websiteConfig.host;
     return api;
 }

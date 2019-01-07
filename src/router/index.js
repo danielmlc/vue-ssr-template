@@ -1,22 +1,27 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Config from '../config/category';
 Vue.use(Router)
 
-// route-level code splitting
-const createListView = id => () => import('../views/CreateListView').then(m => m.default(id))
-const routes = Config.map(config => ({
-  path: `/${config.title}`,
-  component: createListView(config.title)
-}));
-routes.push(
-  { path: '/', redirect: routes[0].path }
-);
+const Main = resolve => require(['../views/Main.vue'], resolve)
 export function createRouter () {
   return new Router({
     mode: 'history',
     fallback: false,
     scrollBehavior: () => ({ y: 0 }),
-    routes:routes
+    routes:[
+      {
+        path: '/',
+        name: 'Main',
+        component: Main,
+        redirect:'home',
+        children: [
+          { path: 'home', component: () => import('../views/home/Index.vue'), name: '首页'  },
+          { path: 'production', component: () => import('../views/production/Index.vue'), name: '产品与服务'  },
+          { path: 'aboutme', component: () => import('../views/aboutme/Index.vue'), name: '关于我们'  },
+        ]
+      }
+    ]
+
+    
   })
 }
