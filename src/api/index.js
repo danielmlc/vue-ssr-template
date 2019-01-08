@@ -16,18 +16,15 @@ if (api.onServer) {
 }
 
 function warmCache() {
-    // fetchItems((api.cachedIds.top || []).slice(0, 30))
     setTimeout(warmCache, 1000 * 60 * 15)
 }
 
-
+const axiosConf={baseURL:'',authorization:'',formatData:false};
 
 //封装fetch方法
- function fetch(options,axiosConfig={baseURL:'',authorization:'',formatData:false}) {
+ function fetch(options,axiosConfig=axiosConf,isCached=true) {
     return new Promise((resolve, reject) => {
-        if(axiosConfig.baseURL){
-            axios.defaults.baseURL=axiosConfig.baseURL;
-        }
+        axios.defaults.baseURL=axiosConfig.baseURL||websiteConfig.url;
         const instance = axios.create(
             axiosConfig.authorization?{headers: { 'Authorization':axiosConfig.authorization}}:{}
         );
@@ -55,66 +52,66 @@ function warmCache() {
     
        //初始化配置
         instance(options).then(response => {
-        const res = response.data;
-        if (response.status!== 200) {
-            console.log(res.error); // for debug
-            reject(res);
-        }
-            resolve(res);
+            logRequests && console.log(`fetching ${options.url}...`)
+            const res = response.data;
+            if (response.status=== 200) {
+                console.log('result',res)
+                if(isCached){
+                const cache = api.cachedItems;
+                    res.__lastUpdated = Date.now()
+                    cache && cache.set(options.url, res);
+                    logRequests && console.log(`fetched ${options.url}.`);
+                    resolve(res);
+                }else{
+                    resolve(res);
+                }
+            }else{
+                console.log(res.error); 
+                reject(res);
+            }
         }).catch(error => {
-            console.log(error); // for debug
+            console.log(error); 
             reject(error);
         });
     })
 }
 
 //获取token
-export function fetchToken(){
-    logRequests && console.log(`fetching token...`)
-    const cache = api.cachedItems;
-    if (cache && cache.has('token')) {
-        logRequests && console.log(`cache hit for token.`)
-        console.log('取缓存的值.',cache.get('token'))
-        return Promise.resolve(cache.get('token'))
-    } else {
-        let paramsdata={
-            grant_type:'client_credentials',
-        };
-     fetch({
-            url:websiteConfig.url+'/Token',
-            method:'post',
-            data:paramsdata
-        },
-        {
-            baseURL:'',
-            authorization:"Basic " +encode(websiteConfig.clientId+":"+websiteConfig.clientSecret),
-            formatData:true
-        })().then((res)=>{
-            console.log(res)
-        })
-    }
+function fetchToken(){
+    let paramsdata={
+        grant_type:'client_credentials',
+    };
+    return fetch({
+        url:'/Token',
+        method:'post',
+        data:paramsdata
+    },
+    {
+        baseURL:'',
+        authorization:"Basic " +encode(websiteConfig.clientId+":"+websiteConfig.clientSecret),
+        formatData:true
+    },true);
 }
 
 //数据请求
-export function fetchData(options,axiosConfig,isCached=true) {
-    logRequests && console.log(`fetching ${options.url}...`)
+export  async function  fetchData(options,axiosConfig=axiosConf,isCached=true) {
+    //判断是否有缓存
+    console.log('执行了...');
     const cache = api.cachedItems;
-    if (cache && cache.has('token')) {
-        logRequests && console.log(`cache hit for token.`)
-        return Promise.resolve(cache.get('token'))
-    }else {
-        const instance = axios.create({
-            headers: { 'Authorization':'Basic QzFCQzRDQ0VEOEI1NDRGQzE1MjY4QjhGMjlDQjAzODY6OEYzRDNCRjNFM0VBMjg5NUNEN0U4RTYxNzMzODVBQzU3QTM5QzI3ODcwNzE0QjY2'}
-        });
-        return new Promise((resolve, reject) => {
-            axios.get(child).then(res => {
-                const val = res.data && res.data.d;
-                if (val) val.__lastUpdated = Date.now()
-                cache && cache.set(child, val);
-                logRequests && console.log(`fetched ${child}.`);
-                resolve(val);
-            }, reject).catch(reject);
-        })
+    if (cache && cache.has(options.url)) {
+        logRequests && console.log(`cache hit for ${options.url}`)
+        return Promise.resolve(cache.get(options.url))
+    } else{
+        //自带权限请求
+        if(axiosConfig.authorization){
+            return fetch(options,axiosConfig,isCached);
+        }else{
+            if(!(cache && cache.has('/Token'))){
+                await fetchToken();
+            }
+            axiosConfig.authorization='Bearer '+cache.get('/Token').access_token;
+            return fetch(options,axiosConfig,isCached);
+        }
     }
 }
 

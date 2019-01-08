@@ -16,7 +16,19 @@ export default {
 
     },
     asyncData ({ store }) {
-        return store.dispatch('setList')
+        const options={
+            url:'/api/services/app/ssingletable07/getMainPageList',
+            method:'post',
+            data:{
+                draw:1,
+                maxResultCount:15,
+                queryConditionItem:[
+                ],
+                skipCount:0,
+                sorting:''
+            },
+        }
+        return store.dispatch('setResult',options)
     },
     title: camelize('home'),
     mounted(){
