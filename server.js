@@ -118,19 +118,7 @@ function render (req, res) {
   })
 }
 
-// app.get('/v1/get_entry_by_rank', (req, res) => {
-//   axios({
-//       method:'get',
-//       url: websiteConfig.host + req.url,
-//       responseType:'stream'
-//   }).then(response => {
-//       // console.log(response);
-//       response.data.pipe(res);
-//   }).catch(err => {
-//       console.error(err);
-//       res.status(500).send('500 | Internal Server Error')
-//   });
-// });
+
 
 
 app.get('*', isProd ? render : (req, res) => {

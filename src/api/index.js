@@ -1,10 +1,10 @@
 // this is aliased in webpack config based on server/client build
-import {createAPI} from 'create-api';
+import { createAPI } from 'create-api';
 import axios from 'axios';
 import qs from 'qs';
 import websiteConfig from '../config/website';
-import  {encode} from '../common/js/base64';
-
+import  { encode } from '../common/js/base64';
+import util from '../common/js/utils';
 
 const logRequests = true || !!process.env.DEBUG_API;
 const api = createAPI();
@@ -22,7 +22,7 @@ function warmCache() {
 const axiosConf={baseURL:'',authorization:'',formatData:false};
 
 //封装fetch方法
- function fetch(options,axiosConfig=axiosConf,isCached=true) {
+ function fetch(options,axiosConfig=axiosConf,isCached=false) {
     return new Promise((resolve, reject) => {
         axios.defaults.baseURL=axiosConfig.baseURL||websiteConfig.url;
         const instance = axios.create(
@@ -57,14 +57,17 @@ const axiosConf={baseURL:'',authorization:'',formatData:false};
             if (response.status=== 200) {
                 console.log('result',res)
                 if(isCached){
-                const cache = api.cachedItems;
-                    res.__lastUpdated = Date.now()
-                    cache && cache.set(options.url, res);
-                    logRequests && console.log(`fetched ${options.url}.`);
-                    resolve(res);
-                }else{
-                    resolve(res);
+                    if(api.onServer){
+                        const cache = api.cachedItems;
+                        res.__lastUpdated = Date.now()
+                        cache && cache.set(options.url, res);
+                        logRequests && console.log(`fetched ${options.url}.`);
+                    }else{
+                        util.setCookie(options.url,JSON.stringify(res));
+                        console.log(`fetched ${options.url}.`);
+                    }
                 }
+                resolve(res);
             }else{
                 console.log(res.error); 
                 reject(res);
@@ -94,24 +97,31 @@ function fetchToken(){
 }
 
 //数据请求
-export  async function  fetchData(options,axiosConfig=axiosConf,isCached=true) {
+export  async function  fetchData(options,axiosConfig=axiosConf) {
     //判断是否有缓存
-    console.log('执行了...');
-    const cache = api.cachedItems;
-    if (cache && cache.has(options.url)) {
-        logRequests && console.log(`cache hit for ${options.url}`)
-        return Promise.resolve(cache.get(options.url))
-    } else{
-        //自带权限请求
-        if(axiosConfig.authorization){
-            return fetch(options,axiosConfig,isCached);
-        }else{
-            if(!(cache && cache.has('/Token'))){
+    //自带权限请求
+    let token=''
+    if(axiosConfig.authorization){
+        return fetch(options,axiosConfig);
+    }else{
+        if(api.onServer){
+            //service
+            const cache = api.cachedItems;
+            token=cache.get('/Token');
+            if(!token){
                 await fetchToken();
+                token=cache.get('/Token');
             }
-            axiosConfig.authorization='Bearer '+cache.get('/Token').access_token;
-            return fetch(options,axiosConfig,isCached);
+        }else{
+            //client
+            token=util.getCookie('/Token');
+            if(!token){
+                await fetchToken();
+                token=JSON.parse(util.getCookie('/Token'));
+            }
         }
+        axiosConfig.authorization='Bearer '+token.access_token;
+        return fetch(options,axiosConfig);
     }
 }
 

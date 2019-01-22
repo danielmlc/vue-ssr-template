@@ -21,7 +21,5 @@ export function createRouter () {
         ]
       }
     ]
-
-    
   })
 }

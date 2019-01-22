@@ -1,6 +1,8 @@
 <template>
   <div>
-    我只是个模板
+    <p v-for="(i,index) in datalist" :key="index">
+        {{i.v_Col1}}
+    </p>
   </div>
 </template>
 
@@ -9,7 +11,7 @@ const camelize = str => str.charAt(0).toUpperCase() + str.slice(1)
 export default {
     data(){
         return {
-
+            datalist:[]
         }
     },
     computed:{
@@ -17,7 +19,7 @@ export default {
     },
     asyncData ({ store }) {
         const options={
-            url:'/api/services/app/ssingletable07/getMainPageList',
+            url:'/api/services/app/ssingletable01/getMainPageList',
             method:'post',
             data:{
                 draw:1,
@@ -28,11 +30,10 @@ export default {
                 sorting:''
             },
         }
-        return store.dispatch('setResult',options)
+         store.dispatch('setResult',options)
     },
     title: camelize('home'),
-    mounted(){
-        console.log(this.$store)
+    created(){
     }
 }
 </script>
