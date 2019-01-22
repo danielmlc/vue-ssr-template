@@ -7,8 +7,11 @@
 </template>
 
 <script >
+import base from '../../mixns/base.js';
+import utils from '../../common/js/utils.js';
 const camelize = str => str.charAt(0).toUpperCase() + str.slice(1)
 export default {
+    mixins:[base],
     data(){
         return {
             datalist:[]
@@ -18,23 +21,14 @@ export default {
 
     },
     asyncData ({ store }) {
-        const options={
-            url:'/api/services/app/ssingletable01/getMainPageList',
-            method:'post',
-            data:{
-                draw:1,
-                maxResultCount:15,
-                queryConditionItem:[
-                ],
-                skipCount:0,
-                sorting:''
-            },
-        }
-         store.dispatch('setResult',options)
+        const options=utils.getContentByNode('服务电话')
+        store.dispatch('setResult',options)
     },
-    title: camelize('home'),
-    created(){
+    title: camelize('首页'),
+    mounted(){
+        console.log(this.$store.state)
     }
+
 }
 </script>
 

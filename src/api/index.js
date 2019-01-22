@@ -52,6 +52,7 @@ const axiosConf={baseURL:'',authorization:'',formatData:false};
     
        //初始化配置
         instance(options).then(response => {
+
             logRequests && console.log(`fetching ${options.url}...`)
             const res = response.data;
             if (response.status=== 200) {
@@ -98,7 +99,6 @@ function fetchToken(){
 
 //数据请求
 export  async function  fetchData(options,axiosConfig=axiosConf) {
-    //判断是否有缓存
     //自带权限请求
     let token=''
     if(axiosConfig.authorization){

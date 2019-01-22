@@ -1,6 +1,6 @@
 <template>
   <div>
-    我只是个模板
+    产品与服务
   </div>
 </template>
 
@@ -18,22 +18,9 @@ export default {
     asyncData ({ store }) {
         
     },
-    title: camelize('home'),
+    title: camelize('产品与服务'),
     mounted(){
-      const options={
-            url:'/api/services/app/ssingletable01/getMainPageList',
-            method:'post',
-            data:{
-                draw:1,
-                maxResultCount:15,
-                queryConditionItem:[
-                ],
-                skipCount:0,
-                sorting:''
-            },
-        }
-        this.$store.dispatch('setResult',options)
-        
+     
     }
 }
 </script>

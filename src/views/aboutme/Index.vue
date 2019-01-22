@@ -1,6 +1,6 @@
 <template>
   <div>
-    我只是个模板
+    关于我们
   </div>
 </template>
 
@@ -16,23 +16,9 @@ export default {
 
     },
     asyncData ({ store }) {
-        const options={
-            url:'/api/services/app/ssingletable01/getMainPageList',
-            method:'post',
-            data:{
-                draw:1,
-                maxResultCount:15,
-                queryConditionItem:[
-                ],
-                skipCount:0,
-                sorting:''
-            },
-        }
-        return store.dispatch('setResult',options)
     },
-    title: camelize('home'),
+    title: camelize('关于我们'),
     mounted(){
-        console.log(this.$store)
     }
 }
 </script>
